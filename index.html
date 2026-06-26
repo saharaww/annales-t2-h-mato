@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Annales du Quiz</title>
+    <style>
+        /* Styles Généraux */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #0f2744 100%);
+            color: #f8fafc;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        /* Conteneur Principal */
+        .container {
+            text-align: center;
+            max-width: 800px;
+            width: 100%;
+        }
+
+        h1 {
+            font-size: 2.6rem;
+            margin-bottom: 10px;
+            background: linear-gradient(to right, #22d3ee, #06b6d4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+
+        .subtitle {
+            color: #94a3b8;
+            font-size: 1.1rem;
+            margin-bottom: 40px;
+        }
+
+        /* Grille pour les deux options */
+        .quiz-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+        }
+
+        /* Style des "Cartes" */
+        .quiz-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 35px 30px;
+            text-decoration: none;
+            color: inherit;
+            backdrop-filter: blur(8px);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            cursor: pointer;
+        }
+
+        /* Effets au survol (Hover) */
+        .quiz-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.06);
+            box-shadow: 0 15px 30px -10px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Personnalisation Carte 2024 (Cyan/Ardoise) */
+        .card-2024:hover {
+            border-color: #06b6d4;
+            box-shadow: 0 0 25px rgba(6, 182, 212, 0.15);
+        }
+
+        /* Personnalisation Carte 2025 (Émeraude/Futuriste) */
+        .card-2025:hover {
+            border-color: #10b981;
+            box-shadow: 0 0 25px rgba(16, 185, 129, 0.15);
+        }
+
+        .badge {
+            align-self: center;
+            padding: 6px 14px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 20px;
+            color: #94a3b8;
+        }
+
+        .card-2024:hover .badge { color: #22d3ee; background: rgba(6, 182, 212, 0.1); }
+        .card-2025:hover .badge { color: #34d399; background: rgba(16, 185, 129, 0.1); }
+
+        .quiz-card h2 {
+            font-size: 1.7rem;
+            margin-bottom: 12px;
+            font-weight: 700;
+        }
+
+        .card-2024 h2 { color: #22d3ee; }
+        .card-2025 h2 { color: #34d399; }
+
+        .quiz-card p {
+            color: #94a3b8;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+
+        /* Style des boutons */
+        .btn {
+            padding: 14px 20px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 1rem;
+            color: #ffffff;
+            transition: background 0.2s ease;
+            width: 100%;
+        }
+
+        .card-2024 .btn { background: #0891b2; }
+        .card-2024:hover .btn { background: #06b6d4; }
+
+        .card-2025 .btn { background: #059669; }
+        .card-2025:hover .btn { background: #10b981; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Entraînement aux Annales</h1>
+        <p class="subtitle">Sélectionnez l'année de votre sujet pour démarrer la session :</p>
+
+        <div class="quiz-grid">
+            
+            <a href="annales2024.html" class="quiz-card card-2024">
+                <div>
+                    <div class="badge">Session Précédente</div>
+                    <h2>Annales 2024</h2>
+                    <p>Révisez avec les sujets officiels de l'année 2024. Idéal pour faire un premier bilan de vos connaissances.</p>
+                </div>
+                <button class="btn">Ouvrir le sujet 2024</button>
+            </a>
+
+            <a href="annales2025.html" class="quiz-card card-2025">
+                <div>
+                    <div class="badge">Session Récente</div>
+                    <h2>Annales 2025</h2>
+                    <p>Mesurez-vous aux questions de la dernière session 2025. Un excellent test en conditions réelles.</p>
+                </div>
+                <button class="btn">Ouvrir le sujet 2025</button>
+            </a>
+
+        </div>
+    </div>
+
+</body>
+</html>
