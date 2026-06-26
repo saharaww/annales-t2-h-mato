@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz de Révision - UE11.1 Hématologie</title>
+    <style>
+        :root {
+            --bg-color: #f7f5f0; /* Fond beige neutre */
+            --container-bg: #ffffff;
+            --primary-color: #c68642; /* Couleur ocre */
+            --primary-dark: #a0652d;
+            --text-color: #3e3429;
+            --border-color: #e3dbc9;
+            --success-color: #2e7d32; /* Vert pour les bonnes réponses */
+            --error-color: #c62828; /* Rouge pour les erreurs */
+            --neutral-choice: #fbf9f6;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: var(--container-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(198, 134, 66, 0.1);
+            border: 1px solid var(--border-color);
+        }
+
+        h1 {
+            color: var(--primary-dark);
+            text-align: center;
+            margin-top: 0;
+            font-size: 2rem;
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 15px;
+        }
+
+        /* Top Bar Fixe ou Sticky */
+        .top-bar {
+            position: sticky;
+            top: 0;
+            background-color: var(--container-bg);
+            padding: 15px 0;
+            border-bottom: 2px solid var(--border-color);
+            margin-bottom: 30px;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .stats-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+            color: var(--primary-dark);
+        }
+
+        .progress-bar-container {
+            background-color: var(--border-color);
+            height: 12px;
+            border-radius: 6px;
+            overflow: hidden;
+            width: 100%;
+        }
+
+        .progress-bar {
+            background-color: var(--primary-color);
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .global-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s ease, transform 0.1s ease;
+            font-weight: 600;
+        }
+
+        button:hover {
+            background-color: var(--primary-dark);
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        .btn-secondary {
+            background-color: #8c7b6b;
+        }
+        .btn-secondary:hover {
+            background-color: #6e5f52;
+        }
+
+        /* Styles des Questions */
+        .question-card {
+            background-color: #fff;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 25px;
+            transition: box-shadow 0.2s ease;
+        }
+
+        .question-card:hover {
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .question-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 15px;
+        }
+
+        .question-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #2b231a;
+            margin: 0;
+        }
+
+        .question-type {
+            font-size: 0.85rem;
+            background-color: #f0e6da;
+            color: var(--primary-dark);
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+
+        .options-list {
+            list-style-type: none;
+            padding: 0;
+            margin: 0 0 20px 0;
+        }
+
+        .option-item {
+            background-color: var(--neutral-choice);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 12px 15px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.2s ease;
+        }
+
+        .option-item:hover {
+            border-color: var(--primary-color);
+            background-color: #fcfbf9;
+        }
+
+        .option-label {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        .option-label input {
+            margin-top: 4px;
+        }
+
+        .justification {
+            margin-top: 8px;
+            font-size: 0.9rem;
+            font-style: italic;
+            display: none;
+            padding-left: 24px;
+            color: #615545;
+        }
+
+        /* Zone de texte pour QROC */
+        .qroc-input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 1rem;
+            box-sizing: border-box;
+            margin-bottom: 15px;
+            background-color: var(--neutral-choice);
+        }
+
+        .qroc-answer {
+            background-color: #f0f7f4;
+            border: 1px solid #c8e6c9;
+            color: #1b5e20;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 10px;
+            display: none;
+        }
+
+        /* Réponses validées et couleurs */
+        .corrected .correct-choice {
+            background-color: #e8f5e9 !important;
+            border-color: var(--success-color) !important;
+        }
+
+        .corrected .incorrect-choice {
+            background-color: #ffebee !important;
+            border-color: var(--error-color) !important;
+        }
+
+        .corrected .justification {
+            display: block !important;
+        }
+
+        .question-feedback {
+            font-weight: bold;
+            margin-top: 15px;
+            font-size: 1.05rem;
+        }
+
+        .score-success { color: var(--success-color); }
+        .score-error { color: var(--error-color); }
+
+        .card-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .neutralized-badge {
+            background-color: #757575 !important;
+            color: white !important;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Annales Corrigées - UE11.1 (DFG3)</h1>
+
+    <div class="top-bar">
+        <div class="stats-container">
+            <span id="score-display">Score EDN : -- / 17</span>
+            <span id="progress-text">Progression : 0%</span>
+        </div>
+        <div class="progress-bar-container">
+            <div id="progress-bar" class="progress-bar"></div>
+        </div>
+        <div class="global-actions">
+            <button onclick="recommencerQuiz()">Recommencer</button>
+            <button class="btn-secondary" onclick="toutReveler()">Tout révéler</button>
+        </div>
+    </div>
+
+    <div id="quiz-questions"></div>
+</div>
+
+<script>
+    // Structure complète des données basées à 100% sur l'annale et son corrigé détaillé.
+    const questionsData = [
+        {
+            id: 1,
+            type: "QRM",
+            neutralized: false,
+            title: "Quel(s) examen(s) faut-il effectuer pour diagnostiquer un lymphome avec certitude ?",
+            options: [
+                { key: "A", text: "une biopsie-exérèse chirurgicale ou sous guidage radiologique d'une adénopathie", correct: true, just: "VRAI. Le diagnostic nécessite obligatoirement une étude histologique sur du tissu obtenu par biopsie (le plus souvent chirurgicale ou microbiopsies radioguidées percutanées)." },
+                { key: "B", text: "une biopsie-exérèse chirurgicale ou sous guidage radiologique des adénopathies les plus accessibles", correct: true, just: "VRAI. Idem, l'obtention d'un fragment tissulaire représentatif pour l'analyse histologique est indispensable." },
+                { key: "C", text: "une ponction pour cytologie d'un ganglion axillaire", correct: false, just: "FAUX. La cytoponction ganglionnaire peut avoir une valeur d'orientation, mais elle n'est pas suffisante pour affirmer le diagnostic de lymphome." },
+                { key: "D", text: "un PET-scanner", correct: false, just: "FAUX. Le PET-scanner est essentiel pour le bilan d'extension mais n'a aucune valeur diagnostique de certitude histologique." },
+                { key: "E", text: "une biopsie ostéomédullaire", correct: false, just: "FAUX. La biopsie ostéomédullaire ne permet pas de poser le diagnostic initial de certitude du lymphome ganglionnaire (utile éventuellement pour le stade)." }
+            ]
+        },
+        {
+            id: 2,
+            type: "QRM",
+            neutralized: false,
+            title: "Concernant les mécanismes des agranulocytoses médicamenteuses, quelle(s) proposition(s) sont correctes ?",
+            options: [
+                { key: "A", text: "la neutropénie isolée évoque une origine centrale liée à un mécanisme de toxicité médullaire", correct: false, just: "FAUX. La toxicité directe médullaire induit une hypoplasie/aplasie qui aboutit finalement à une pancytopénie (atteinte de chacune des lignées myéloïdes), même si elle débute parfois sélectivement." },
+                { key: "B", text: "la neutropénie est habituellement isolée en cas de mécanisme immunoallergique", correct: true, just: "VRAI. Les agranulocytoses d'origine périphérique immunoallergique intéressent uniquement la lignée granulocytaire (les lignées érythrocytaire et plaquettaire restent normales)." },
+                { key: "C", text: "l'agranulocytose médicamenteuse liée à un mécanisme immunoallergique dépend de la posologie du médicament administrée", correct: false, just: "FAUX. Les formes immunoallergiques résultent d'une hypersensibilité immunologique et sont totalement indépendantes de la dose administrée." },
+                { key: "D", text: "l'agranulocytose médicamenteuse liée à un mécanisme immunoallergique ne nécessite pas de contact sensibilisant au préalable avec le médicament", correct: false, just: "FAUX. Un mécanisme immunoallergique nécessite impérativement un contact sensibilisant préalable pour développer la mémoire immunologique." },
+                { key: "E", text: "l'agranulocytose médicamenteuse liée à un mécanisme de toxicité médullaire est en général prévisible et attendue", correct: true, just: "VRAI. Elles sont généralement prédictibles et dose-dépendantes (ex: chimiothérapie cytotoxique)." }
+            ]
+        },
+        {
+            id: 3,
+            type: "QRM",
+            neutralized: false,
+            title: "Quelle(s) proposition(s) est (sont) vraie(s) concernant les lymphomes de Hodgkin ?",
+            options: [
+                { key: "A", text: "les formes localisées sont les plus fréquentes chez le sujet âgé", correct: false, just: "FAUX. Chez le sujet âgé, ils sont souvent découverts à des stades avancés (III ou IV); les formes localisées (I ou II) y sont moins fréquentes que chez le jeune." },
+                { key: "B", text: "ils sont une cause classique de fièvre au long cours", correct: true, just: "VRAI. C'est une cause classique de fièvre prolongée (fièvre de Pel-Ebstein), faisant partie des symptômes systémiques B." },
+                { key: "C", text: "l'histologie la plus fréquente est celle d'une sclérose nodulaire chez les sujets jeunes", correct: true, just: "VRAI. La sclérose nodulaire (bandes de collagène entourant les nodules) est le sous-type le plus fréquent, particulièrement chez l'adulte jeune." },
+                { key: "D", text: "les formes cervico-médiastinales prédominent chez le jeune adulte", correct: true, just: "VRAI. Les localisations cervicales et/ou médiastinales sont très fréquentes à cet âge et constituent souvent les premières manifestations." },
+                { key: "E", text: "l'atteinte ganglionnaire d'un stade III est nécessairement sus- et sous-diaphragmatique", correct: true, just: "VRAI. Par définition, le stade III d'Ann Arbor implique des atteintes ganglionnaires situées des deux côtés du diaphragme." }
+            ]
+        },
+        {
+            id: 4,
+            type: "QRM",
+            neutralized: false,
+            title: "Au sujet du diagnostic des leucémies aiguës, laquelle ou lesquelles des propositions suivantes est/sont exacte(s) ?",
+            options: [
+                { key: "A", text: "un frottis sanguin doit être réalisé pour vérifier l'absence de cellules atypiques, d'une myélémie et de blastes circulants lorsqu'une hyperleucocytose est découverte sur une numération sanguine", correct: true, just: "VRAI. Le frottis est indispensable en cas d'hyperleucocytose pour examiner la morphologie cellulaire et chercher des blastes circulants." },
+                { key: "B", text: "l'indication du myélogramme sera formelle si des cellules immatures, dont des blastes, sont mises en évidence sur le frottis sanguin", correct: true, just: "VRAI. La mise en évidence de blastes au frottis impose un myélogramme pour confirmer le diagnostic (seuil diagnostique ≥ 20% de blastes intramédullaires)." },
+                { key: "C", text: "l'immunophénotypage des cellules leucémiques est indispensable au diagnostic des leucémies aiguës, notamment lymphoïdes", correct: true, just: "VRAI. L'immunophénotypage par cytométrie en flux est essentiel pour affirmer la lignée et distinguer les LAL des LAM." },
+                { key: "D", text: "le diagnostic du type de leucémie aiguë ne repose que sur la morphologie et la cytochimie", correct: false, just: "FAUX. Il repose impérativement sur une approche intégrée incluant aussi l'immunophénotypage, la cytogénétique et la biologie moléculaire." },
+                { key: "E", text: "la recherche d'anomalies cytogénétiques médullaires acquises est indispensable", correct: true, just: "VRAI. L'analyse cytogénétique (caryotype/biologie moléculaire) est indispensable pour la stratification pronostique et le choix thérapeutique." }
+            ]
+        },
+        {
+            id: 5,
+            type: "QRM",
+            neutralized: false,
+            title: "Concernant les myélomes multiples, laquelle ou lesquelles des propositions suivantes est ou sont exacte(s) ?",
+            options: [
+                { key: "A", text: "l'âge moyen lors du diagnostic est d'environ 65 ans", correct: true, just: "VRAI/ACCEPTÉ. Note du collège : touche l'adulte avec un âge moyen d'environ 70 ans au diagnostic (65 ans reste dans la cible clinique acceptée dans cette grille)." },
+                { key: "B", text: "ils représentent environ 1% des cas de cancers", correct: true, just: "VRAI. Le myélome multiple représente bien 1% de l'ensemble des cancers." },
+                { key: "C", text: "ils représentent environ 10% des hémopathies malignes", correct: true, just: "VRAI. Il correspond environ à 10% des cancers hématologiques." },
+                { key: "D", text: "des myélomes symptomatiques peuvent se révéler par une anémie normocytaire arégénérative", correct: true, just: "VRAI. L'anémie normocytaire ou macrocytaire arégénérative (liée à l'infiltration médullaire et l'insuffisance rénale) est une manifestation révélatrice classique." },
+                { key: "E", text: "la plupart des pics monoclonaux sont découverts fortuitement à l'occasion d'examens systématiques", correct: false, just: "FAUX. Si un certain nombre de pics isolés sont fortuits, le myélome MULTIPLE SYMPTOMATIQUE se révèle le plus souvent par des signes cliniques ou biologiques patents (douleurs osseuses, CRAB...)." }
+            ]
+        },
+        {
+            id: 6,
+            type: "QRM",
+            neutralized: false,
+            title: "Concernant les lymphomes de faible grade (lymphomes dit indolents), laquelle ou lesquelles des propositions suivantes est ou sont exacte(s) ?",
+            options: [
+                { key: "A", text: "ils peuvent s'accompagner avec une fréquence accrue de cytopénies immunes, telle une anémie hémolytique auto-immune", correct: true, just: "VRAI. Par dysrégulation immunitaire liée à la prolifération lymphoïde chronique, des cytopénies auto-immunes (comme l'AHAI) peuvent survenir." },
+                { key: "B", text: "ils peuvent ne comporter que des atteintes extra-ganglionnaires", correct: true, just: "VRAI. C'est typique de certains lymphomes comme le lymphome de la zone marginale de type MALT (ex: estomac, glandes salivaires)." },
+                { key: "C", text: "les lymphomes de ce type s'accompagnent toujours de signes cliniques généraux", correct: false, just: "FAUX. Les symptômes généraux B (fièvre, sueurs, amaigrissement) sont au contraire souvent absents au diagnostic dans les formes indolentes." },
+                { key: "D", text: "la constatation d'une population lymphoïde anormale circulante est fréquente", correct: true, just: "VRAI. Une phase circulante (passage de cellules tumorales dans le sang) est fréquente, par exemple dans le lymphome lymphocytique." },
+                { key: "E", text: "en fonction de leur masse tumorale, ils peuvent ne justifier que d'une simple surveillance initialement sans besoin d'un traitement actif", correct: true, just: "VRAI. En l'absence de critères de forte masse tumorale ou de cytopénie menaçante, l'abstention thérapeutique avec simple surveillance ('Watch and Wait') est la règle." }
+            ]
+        },
+        {
+            id: 7,
+            type: "QRM",
+            neutralized: true,
+            title: "[NEUTRALISÉE] Concernant le diagnostic des lymphomes :",
+            options: [
+                { key: "A", text: "la biopsie ganglionnaire n'est réalisée que devant une adénopathie persistant depuis au moins six semaines", correct: false, just: "Question neutralisée lors de l'examen officiel." },
+                { key: "B", text: "un fragment de biopsie est systématiquement congelé au diagnostic", correct: false, just: "Question neutralisée lors de l'examen officiel." },
+                { key: "C", text: "le fragment de biopsie fixé et inclus est analysé après coloration May-Grünwald-Giemsa", correct: false, just: "Question neutralisée lors de l'examen officiel." },
+                { key: "D", text: "la technique d'immunofluorescence indirecte permet de définir avec précision le sous-type de lymphome", correct: false, just: "Question neutralisée lors de l'examen officiel." },
+                { key: "E", text: "la technique d'hybridation in situ en fluorescence (FISH) effectué sur lame permet de confirmer le diagnostic de certains lymphomes", correct: false, just: "Question neutralisée lors de l'examen officiel." }
+            ]
+        },
+        {
+            id: 8,
+            type: "QRM",
+            neutralized: true,
+            title: "[NEUTRALISÉE] Concernant le diagnostic de gammapathie monoclonale de signification indéterminée :",
+            options: [
+                { key: "A", text: "le patient est asymptomatique", correct: false, just: "Question neutralisée lors de l'examen officiel." },
+                { key: "B", text: "l'immunoglobuline monoclonale est de type IgG ou IgA", correct: false, just: "Question neutralisée lors de l'examen officiel." },
+                { key: "C", text: "le taux de l'immunoglobuline monoclonale est strictement inférieur à 10 g/L", correct: false, just: "Question neutralisée lors de l'examen officiel." },
+                { key: "D", text: "le taux urinaire du composant monoclonal est strictement inférieur à 500 mg/24h", correct: false, just: "Question neutralisée lors de l'examen officiel." },
+                { key: "E", text: "l'absence d'antécédent familiale au 1er degré de myélome multiple est indispensable au diagnostic", correct: false, just: "Question neutralisée lors de l'examen officiel." }
+            ]
+        },
+        {
+            id: 9,
+            type: "QRM",
+            neutralized: false,
+            title: "Parmi les pathologies et les traitements suivants, lesquels entraînent-ils un déficit immunitaire principalement humoral ?",
+            options: [
+                { key: "A", text: "une leucémie aiguë myéloïde", correct: false, just: "FAUX (Inacceptable). La LAM perturbe la production médullaire globale et cause surtout une neutropénie (déficit cellulaire phagocytaire), pas un déficit principalement humoral." },
+                { key: "B", text: "l'utilisation du rituximab ou d'un anticorps anti-CD20 en général", correct: true, just: "VRAI. Les anti-CD20 détruisent de manière prolongée les lymphocytes B, cellules responsables de la production d'anticorps, provoquant un déficit humoral marqué." },
+                { key: "C", text: "une leucémie lymphoïde chronique", correct: true, just: "VRAI. La LLC s'accompagne constamment d'une altération fonctionnelle et quantitative des lymphocytes B sains, induisant une hypogammaglobulinémie (déficit humoral)." },
+                { key: "D", text: "un myélome multiple", correct: true, just: "VRAI. Caractérisé par une prolifération plasmocytaire monoclonale qui étouffe la production des autres immunoglobulines (hypogammaglobulinémie), induisant un déficit humoral majeur." },
+                { key: "E", text: "une transplantation d'organes solides", correct: false, just: "FAUX. Les traitements immunosuppresseurs post-greffe ciblent principalement l'immunité cellulaire (lymphocytes T) pour éviter le rejet." }
+            ]
+        },
+        {
+            id: 10,
+            type: "QRM",
+            neutralized: false,
+            title: "Concernant la cellule géante anormale observée en histologie ganglionnaire (image type Reed-Sternberg) :",
+            options: [
+                { key: "A", text: "la cellule observée est binucléée et correspond à une cellule de Reed-Sternberg", correct: true, just: "VRAI. Les cellules de Reed-Sternberg sont de très grandes cellules caractéristiques, typiquement binucléées avec de grands nucléoles en 'yeux de hibou'." },
+                { key: "B", text: "la cellule observée est binucléée et correspond à une ombre de Gumprecht", correct: false, just: "FAUX. Les ombres de Gumprecht s'observent sur un frottis sanguin de LLC (fragilité lymphocytaire à l'étalement), pas en examen histologique de tissu." },
+                { key: "C", text: "la cellule observée est colorée à l'hématéine-éosine", correct: true, just: "VRAI. La coloration HE colore le noyau en violet/bleu (hématoxyline) et le cytoplasme en rose (éosine), visible sur cette préparation anatomopathologique." },
+                { key: "D", text: "l'observation de cette cellule oriente vers le diagnostic de leucémie lymphoïde chronique", correct: false, just: "FAUX. La cellule de Reed-Sternberg oriente exclusivement vers le Lymphome de Hodgkin." },
+                { key: "E", text: "l'observation de cette cellule oriente vers le diagnostic de lymphome de Hodgkin", correct: true, just: "VRAI. C'est la signature histologique obligatoire pour poser le diagnostic de lymphome de Hodgkin." }
+            ]
+        },
+        {
+            id: 11,
+            type: "QRM",
+            neutralized: false,
+            title: "Parmi les complications suivantes, laquelle ou lesquelles est (sont) associée(s) au myélome multiple ?",
+            options: [
+                { key: "A", text: "syndrome de Richter", correct: false, just: "FAUX. Le syndrome de Richter est la transformation d'une leucémie lymphoïde chronique (LLC) en lymphome agressif." },
+                { key: "B", text: "syndrome de la queue de cheval", correct: true, just: "VRAI. Le myélome peut entraîner des plasmocytomes osseux ou des tassements vertébraux agressifs qui compriment les racines nerveuses sacrées/lombaires." },
+                { key: "C", text: "néphropathie à cylindres myélomateux", correct: true, just: "VRAI. Complication rénale classique par précipitation tubulaire des chaînes légères libres d'immunoglobulines (protéines de Bence-Jones)." },
+                { key: "D", text: "déficit immunitaire humoral", correct: true, just: "VRAI. L'immunoparésie (baisse des IG polyclonales fonctionnelles) crée un déficit humoral favorisant les infections à germes encapsulés." },
+                { key: "E", text: "infection fongique pulmonaire invasive", correct: false, just: "FAUX (selon la grille principale officielle, bien que la corticothérapie au long cours puisse exposer à des opportunistes comme la pneumocystose)." }
+            ]
+        },
+        {
+            id: 12,
+            type: "QRM",
+            neutralized: false,
+            title: "Au sujet des chaînes légères clonales, laquelle ou lesquelles des propositions suivantes est ou sont exacte(s) ?",
+            options: [
+                { key: "A", text: "leur précipitation rénale est favorisée par la déshydratation extracellulaire", correct: true, just: "VRAI. La déshydratation concentre les chaînes légères dans la lumière tubulaire, accélérant leur précipitation sous forme de cylindres obstructifs." },
+                { key: "B", text: "le risque de précipitation rénale est variable d’un patient à un autre, et d’une chaîne légère clonale à une autre", correct: true, just: "VRAI. Cela dépend fortement des propriétés physico-chimiques intrinsèques de la chaîne variable (chaîne kappa ou lambda) et de la charge tumorale." },
+                { key: "C", text: "l'atteinte rénale la plus fréquente est liée à leur précipitation intra-glomérulaire", correct: false, just: "FAUX. L'atteinte la plus fréquente est tubulo-interstitielle (néphropathie à cylindres myélomateux). Les atteintes glomérulaires (Amylose AL, Ranndall) sont plus rares." },
+                { key: "D", text: "la mesure des chaînes légères libres dans le plasma est indiquée au diagnostic de myélome lorsqu'il existe une hypogammaglobulinémie", correct: true, just: "VRAI. Essentielle au diagnostic, notamment en cas de myélome pauci ou non-sécrétant où l'électrophorèse ne montre pas de pic évident mais une hypogammaglobulinémie." },
+                { key: "E", text: "la majorité des amyloses immunoglobuliniques (AL) sont dues à des dépôts organisées de chaînes légères clonales", correct: true, just: "VRAI. L'amylose AL se caractérise par des dépôts de chaînes légères monoclonales (souvent de type lambda) structurées sous forme de fibrilles insolubles." }
+            ]
+        },
+        {
+            id: 13,
+            type: "QRM",
+            neutralized: false,
+            title: "A propos du risque d’infections sévères chez un patient neutropénique, laquelle ou lesquelles des propositions suivantes est ou sont exacte(s) ?",
+            options: [
+                { key: "A", text: "le risque augmente avec la durée prévisible de la neutropénie", correct: true, just: "VRAI. Une neutropénie prolongée (notamment > 7 jours) majore drastiquement le risque d'infections bactériennes puis fongiques opportunistes." },
+                { key: "B", text: "le risque est déjà élevé quand le taux de polynucléaires neutrophiles est supérieur à 1,5 G/L", correct: false, just: "FAUX. À 1,5 G/L le taux est normal ou à la limite inférieure. Le risque devient significatif sous 0,5 G/L (sévère) et critique sous 0,1 G/L (profonde)." },
+                { key: "C", text: "le risque est plus élevé si la neutropénie est d’installation rapide ou brutale", correct: true, just: "VRAI. Une chute rapide (post-chimiothérapie immédiate) ne laisse pas le temps aux autres mécanismes immunitaires de compensation de s'activer." },
+                { key: "D", text: "le risque d’infections bactériennes et fongiques est accru", correct: true, just: "VRAI. Risque de pullulation bactérienne immédiate (translocation digestive), puis fongique (Aspergillus, Candida) si la neutropénie perdure." },
+                { key: "E", text: "le risque peut être réduit par l’utilisation systématique de facteurs de croissance granulocytaire", correct: true, just: "VRAI/ACCEPTÉ. L'utilisation des G-CSF (comme le filgrastim) permet de réduire la durée et la profondeur de la neutropénie chez les patients à risque." }
+            ]
+        },
+        {
+            id: 14,
+            type: "QRM",
+            neutralized: false,
+            title: "Concernant les anomalies sanguines associées au myélome multiple, laquelle ou lesquelles des propositions suivantes est ou sont exacte(s) ?",
+            options: [
+                { key: "A", text: "une anémie normochrome normocytaire est l´anomalie sanguine la plus fréquemment observée", correct: true, just: "VRAI. C'est l'anomalie biologique la plus fréquente due à l'infiltration tumorale de la moelle et au déficit en érythropoïétine (insuffisance rénale)." },
+                { key: "B", text: "l'anémie est arégénérative le plus souvent", correct: true, just: "VRAI. La moelle infiltrée par les plasmocytes malins est incapable de produire une réponse réticulocytaire adaptée." },
+                { key: "C", text: "une neutropénie ou une thrombopénie sont aussi fréquemment observées", correct: false, just: "FAUX. Les lignées plaquettaire et blanche sont généralement respectées au diagnostic (sauf forme très avancée)." },
+                { key: "D", text: "la présence de plasmocytes circulants, visibles sur un frottis sanguin, est quasi constante", correct: false, just: "FAUX. Le passage circulant de plasmocytes est rare et de sombre pronostic (leucémie à plasmocytes), absent dans l'immense majorité des formes classiques." },
+                { key: "E", text: "sur un frottis sanguin, on peut observer la présence d´hématies en rouleaux (signe d'hyperviscosité)", correct: true, just: "VRAI. L'hyperprotidémie majeure liée à l'immunoglobuline monoclonale modifie les charges de surface des globules rouges, induisant leur empilement en rouleaux." }
+            ]
+        },
+        {
+            id: 15,
+            type: "QRM",
+            neutralized: false,
+            title: "Quelle(s) proposition(s) est (sont) vraies concernant les lymphomes B diffus à grandes cellules ?",
+            options: [
+                { key: "A", text: "ce sont les lymphomes les plus fréquents", correct: true, just: "VRAI. Le LBDGC représente le sous-type le plus fréquent des lymphomes non hodgkiniens (environ 35% des cas)." },
+                { key: "B", text: "la survenue d’un lymphome B diffus à grandes cellules peut être favorisée par un déficit immunitaire préexistant", correct: true, just: "VRAI. Le risque est fortement accru en cas d'immunodépression (VIH, post-transplantation, traitement immunosuppresseur)." },
+                { key: "C", text: "un stade IV (classification Ann Arbor) est toujours synonyme d’un envahissement médullaire par le lymphome", correct: false, just: "FAUX. Le stade IV indique une atteinte extra-ganglionnaire diffuse (foie, poumon...), mais n'implique pas obligatoirement un envahissement de la moelle osseuse." },
+                { key: "D", text: "une augmentation des LDH est de valeur pronostique démontrée", correct: true, just: "VRAI. Le taux de LDH reflète la masse tumorale et la cinétique de prolifération ; il est un critère majeur de l'IPI (Index Pronostique International)." },
+                { key: "E", text: "un lymphome B indolent peut évoluer vers un lymphome B diffus à grandes cellules", correct: true, just: "VRAI. C'est le phénomène de transformation histologique (ex: un lymphome folliculaire se transformant en LBDGC agressif)." }
+            ]
+        },
+        {
+            id: 16,
+            type: "QRM",
+            neutralized: false,
+            title: "Concernant les lymphomes, laquelle ou lesquelles des situations suivantes nécessite(nt) une prise en charge diagnostique et thérapeutique en urgence ?",
+            options: [
+                { key: "A", text: "une extension médullaire du lymphome", correct: false, just: "FAUX. Bien que grave, l'atteinte médullaire isolée sans cytopénie critique ne constitue pas une urgence thérapeutique immédiate (contrairement aux compressions)." },
+                { key: "B", text: "la constatation d’un syndrome cave supérieur", correct: true, just: "VRAI. Urgence compressive médicale absolue (compression de la veine cave par une masse médiastinale) entraînant un risque d'œdème cérébral et de détresse respiratoire." },
+                { key: "C", text: "l’existence d’un syndrome de la queue de cheval", correct: true, just: "VRAI. Urgence neurologique absolue par compression radiculaire tumorale nécessitant une décompression rapide pour éviter des séquelles sphinctériennes/motrices définitives." },
+                { key: "D", text: "tout diagnostic de lymphome B diffus à grandes cellules", correct: false, just: "FAUX. C'est une forme agressive qui impose un traitement rapide (sous quelques jours/semaines), mais en l'absence de complication compressive ou métabolique, cela ne relève pas de l'urgence immédiate ('à l'heure près')." },
+                { key: "E", text: "la constatation d’une masse abdominale de progression rapide", correct: true, just: "VRAI. Risque de syndrome de lyse tumorale spontané, d'occlusion intestinale ou d'insuffisance rénale par compression urétérale bilatérale." }
+            ]
+        },
+        {
+            id: 17,
+            type: "QRM",
+            neutralized: false,
+            title: "Vous suspectez un syndrome myélodysplasique chez un patient de 67 ans présentant une anémie arégénérative. Devant laquelle ou lesquelles des situations suivantes ?",
+            options: [
+                { key: "A", text: "Hb 8 g/dL, VGM 102 fL, PNN 1 G/L, Plaquettes 100 G/L. Créat 80 µM, Protides 65 g/L", correct: true, just: "VRAI. Présence d'une pancytopénie avec macrocytose (VGM > 100 fL) typique d'une myélodysplasie chez un sujet âgé, sans stigmate d'insuffisance rénale ou de myélome." },
+                { key: "B", text: "Hb 8 g/dL, VGM 86 fL, PNN 1,8 G/L, Plaquettes 200 G/L. Créat 200 µM, Protides 65 g/L", correct: false, just: "FAUX. Les lignées blanche et plaquettaire sont préservées, et l'insuffisance rénale marquée (Créat 200) oriente plutôt vers une autre étiologie (ex: néphropathie)." },
+                { key: "C", text: "Hb 8 g/dL, VGM 76 fL, PNN 1,8 G/L, Plaquettes 200 G/L. Créat 80 µM, Protides 65 g/L", correct: false, just: "FAUX. L'anémie est ici microcytaire (VGM < 80 fL), ce qui exclut l'orientation principale d'une myélodysplasie (plutôt carence martiale ou inflammatoire)." },
+                { key: "D", text: "Hb 8 g/dL, VGM 102 fL, PNN 1 G/L, Plaquettes 100 G/L. Créat 200 µM, Protides 65 g/L", correct: true, just: "VRAI. Présence de la pancytopénie macrocytaire caractéristique du SMD. La créatininémie augmentée n'exclut pas le diagnostic médullaire sous-jacent." },
+                { key: "E", text: "Hb 8 g/dL, VGM 86 fL, PNN 1,8 G/L, Plaquettes 200 G/L. Créat 80 µM, Protides 100 g/L", correct: false, just: "FAUX. Pas de pancytopénie et présence d'une hyperprotidémie majeure (Protides 100 g/L) qui doit faire suspecter en priorité une gammapathie monoclonale / myélome." }
+            ]
+        },
+        {
+            id: 18,
+            type: "QRM",
+            neutralized: false,
+            title: "Quel(s) examen(s) sont utiles ou indispensables à l’évaluation initiale de l'extension d'un lymphome non hodgkinien ?",
+            options: [
+                { key: "A", text: "une imagerie cérébrale", correct: false, just: "FAUX. L'imagerie cérébrale (TDM/IRM) n'est pas systématique, elle est réservée uniquement aux formes agressives avec points d'appel neurologiques ou localisations à haut risque." },
+                { key: "B", text: "une analyse cytogénétique à partir du ganglion", correct: false, just: "FAUX. Cruciale pour le diagnostic et la classification fine du lymphome, mais n'intervient pas dans le bilan d'extension de la maladie." },
+                { key: "C", text: "une TDM thoracique, abdominale et pelvienne avec injection de produit de contraste iodé", correct: true, just: "VRAI. Examen morphologique standard de référence historique indispensable pour cartographier et mesurer toutes les aires ganglionnaires sous/sus-diaphragmatiques." },
+                { key: "D", text: "un PET-scanner", correct: true, just: "VRAI. Examen clé incontournable (au 18-FDG) pour le bilan d'extension initial des lymphomes avides de glucose (agressifs et Hodgkin), plus sensible que le scanner seul." },
+                { key: "E", text: "une électrophorèse des protéines sériques", correct: false, just: "FAUX. Utile au bilan biologique général ou pour éliminer un composant monoclonal associé, mais ne participe pas à l'évaluation de l'extension tumorale anatomique." }
+            ]
+        },
+        {
+            id: 19,
+            type: "QROC",
+            neutralized: false,
+            title: "En présence d'une pancytopénie à l'hémogramme, quel geste ou examen morphologique simple du sang périphérique doit impérativement être réalisé en premier pour éliminer une urgence hématologique (comme une leucémie aiguë) ?",
+            expectedAnswer: "Un frottis sanguin (pour vérifier l'absence de blastes circulants et analyser la morphologie des cellules)."
+        }
+    ];
+
+    // Calcul du barème EDN officiel pour une question QRM
+    function calculerScoreQRM(choixUtilisateur, optionsCorrectes) {
+        // choixUtilisateur et optionsCorrectes sont des tableaux de booléens (ex: [true, false, ...])
+        let erreurs = 0;
+        for (let i = 0; i < 5; i++) {
+            if (choixUtilisateur[i] !== optionsCorrectes[i]) {
+                erreurs++;
+            }
+        }
+        if (erreurs === 0) return 1.0;
+        if (erreurs === 1) return 0.5;
+        if (erreurs === 2) return 0.2;
+        return 0.0;
+    }
+
+    // Initialisation et affichage du Quiz
+    function genererQuiz() {
+        const container = document.getElementById('quiz-questions');
+        container.innerHTML = "";
+
+        questionsData.forEach((q, index) => {
+            const card = document.createElement('div');
+            card.className = "question-card";
+            card.id = `q-card-${q.id}`;
+
+            // Header
+            const header = document.createElement('div');
+            header.className = "question-header";
+            
+            const title = document.createElement('h3');
+            title.className = "question-title";
+            title.innerText = `N°${q.id}. ${q.title}`;
+            
+            const typeBadge = document.createElement('span');
+            typeBadge.className = "question-type";
+            if (q.neutralized) {
+                typeBadge.classList.add('neutralized-badge');
+                typeBadge.innerText = "NEUTRALISÉE";
+            } else {
+                typeBadge.innerText = q.type;
+            }
+
+            header.appendChild(title);
+            header.appendChild(typeBadge);
+            card.appendChild(header);
+
+            // Options (QRU / QRM)
+            if (q.type === "QRM" || q.type === "QRU") {
+                const list = document.createElement('ul');
+                list.className = "options-list";
+
+                q.options.forEach((opt, oIdx) => {
+                    const li = document.createElement('li');
+                    li.className = "option-item";
+                    li.id = `q-${q.id}-opt-${oIdx}`;
+
+                    const label = document.createElement('label');
+                    label.className = "option-label";
+
+                    const input = document.createElement('input');
+                    input.type = q.type === "QRU" ? "radio" : "checkbox";
+                    input.name = `question-${q.id}`;
+                    input.value = oIdx;
+                    
+                    // Permet de cocher en cliquant sur toute la boîte
+                    input.addEventListener('click', (e) => { e.stopPropagation(); rafraichirProgression(); });
+                    li.addEventListener('click', () => {
+                        if (!card.classList.contains('corrected')) {
+                            input.checked = !input.checked;
+                            rafraichirProgression();
+                        }
+                    });
+
+                    const textSpan = document.createElement('span');
+                    textSpan.innerHTML = `<strong>${opt.key}.</strong> ${opt.text}`;
+
+                    label.appendChild(input);
+                    label.appendChild(textSpan);
+                    li.appendChild(label);
+
+                    // Justification cachée par défaut
+                    const justDiv = document.createElement('div');
+                    justDiv.className = "justification";
+                    justDiv.innerText = opt.just;
+                    li.appendChild(justDiv);
+
+                    list.appendChild(li);
+                });
+                card.appendChild(list);
+            } 
+            // QROC
+            else if (q.type === "QROC") {
+                const inputArea = document.createElement('textarea');
+                inputArea.className = "qroc-input";
+                inputArea.rows = 3;
+                inputArea.placeholder = "Saisissez votre réponse libre ici...";
+                inputArea.addEventListener('input', rafraichirProgression);
+                card.appendChild(inputArea);
+
+                const ansDiv = document.createElement('div');
+                ansDiv.className = "qroc-answer";
+                ansDiv.id = `qroc-ans-${q.id}`;
+                ansDiv.innerHTML = `<strong>Réponse attendue :</strong> ${q.expectedAnswer}`;
+                card.appendChild(ansDiv);
+            }
+
+            // Feedback Zone
+            const feedback = document.createElement('div');
+            feedback.className = "question-feedback";
+            feedback.id = `feedback-${q.id}`;
+            card.appendChild(feedback);
+
+            // Boutons d'action par carte
+            const actions = document.createElement('div');
+            actions.className = "card-actions";
+
+            const btnValider = document.createElement('button');
+            btnValider.innerText = "Valider";
+            btnValider.id = `btn-valider-${q.id}`;
+            btnValider.onclick = () => validerQuestion(q.id);
+
+            const btnReveler = document.createElement('button');
+            btnReveler.innerText = "Voir la réponse";
+            btnReveler.className = "btn-secondary";
+            btnReveler.onclick = () => revelerQuestion(q.id);
+
+            actions.appendChild(btnValider);
+            actions.appendChild(btnReveler);
+            card.appendChild(actions);
+
+            container.appendChild(card);
+        });
+
+        rafraichirProgression();
+    }
+
+    // Validation d'une question individuelle
+    function validerQuestion(id) {
+        const q = questionsData.find(item => item.id === id);
+        const card = document.getElementById(`q-card-${id}`);
+        if (card.classList.contains('corrected')) return; // Déjà validé
+
+        card.classList.add('corrected');
+        
+        // Désactiver les inputs
+        const inputs = card.querySelectorAll('input, textarea');
+        inputs.forEach(i => i.disabled = true);
+
+        const feedback = document.getElementById(`feedback-${id}`);
+
+        if (q.type === "QRM" || q.type === "QRU") {
+            let choixUtilisateur = [];
+            let optionsCorrectes = [];
+
+            q.options.forEach((opt, oIdx) => {
+                const input = card.querySelectorAll('input')[oIdx];
+                const optItem = document.getElementById(`q-${id}-opt-${oIdx}`);
+                
+                choixUtilisateur.push(input.checked);
+                optionsCorrectes.push(opt.correct);
+
+                // Application des couleurs sur les options
+                if (opt.correct) {
+                    optItem.classList.add('correct-choice');
+                } else if (!opt.correct && input.checked) {
+                    optItem.classList.add('incorrect-choice');
+                }
+            });
+
+            if (q.neutralized) {
+                feedback.innerHTML = `<span class="score-success">Question Neutralisée (Non comptée dans le score)</span>`;
+            } else {
+                const pts = calculerScoreQRM(choixUtilisateur, optionsCorrectes);
+                if (pts === 1) {
+                    feedback.innerHTML = `<span class="score-success">Tout juste ! +1 pt</span>`;
+                } else if (pts > 0) {
+                    feedback.innerHTML = `<span class="score-success">Partiellement correct : +${pts} pt</span>`;
+                } else {
+                    feedback.innerHTML = `<span class="score-error">Incorrect : 0 pt</span>`;
+                }
+                card.setAttribute('data-score', pts);
+            }
+        } else if (q.type === "QROC") {
+            document.getElementById(`qroc-ans-${id}`).style.display = "block";
+            feedback.innerHTML = `<span>Réponse libre affichée (Non noté)</span>`;
+        }
+
+        calculerScoreGlobal();
+    }
+
+    // Révéler les réponses sans impacter le score si pas validé au préalable
+    function revelerQuestion(id) {
+        const q = questionsData.find(item => item.id === id);
+        const card = document.getElementById(`q-card-${id}`);
+        
+        if (!card.classList.contains('corrected')) {
+            card.classList.add('corrected');
+            const inputs = card.querySelectorAll('input, textarea');
+            inputs.forEach(i => i.disabled = true);
+            
+            if (q.type === "QRM" || q.type === "QRU") {
+                q.options.forEach((opt, oIdx) => {
+                    const optItem = document.getElementById(`q-${id}-opt-${oIdx}`);
+                    if (opt.correct) optItem.classList.add('correct-choice');
+                });
+                document.getElementById(`feedback-${id}`).innerHTML = `<span>Réponse révélée.</span>`;
+                card.setAttribute('data-score', '0'); // Révélé directement = 0
+            } else if (q.type === "QROC") {
+                document.getElementById(`qroc-ans-${id}`).style.display = "block";
+            }
+        }
+        calculerScoreGlobal();
+    }
+
+    // Calculer le score total du quiz
+    function calculerScoreGlobal() {
+        let totalScore = 0;
+        let totalQuestionsNotées = 0;
+
+        questionsData.forEach(q => {
+            if (!q.neutralized && q.type !== "QROC") {
+                totalQuestionsNotées++;
+                const card = document.getElementById(`q-card-${q.id}`);
+                const scoreAttr = card.getAttribute('data-score');
+                if (scoreAttr) {
+                    totalScore += parseFloat(scoreAttr);
+                }
+            }
+        });
+
+        // Les questions 7 et 8 étant neutralisées, il reste 17 questions notées sur 19 au total.
+        document.getElementById('score-display').innerText = `Score EDN : ${totalScore.toFixed(1)} / ${totalQuestionsNotées}`;
+    }
+
+    // Gestion de la barre de progression supérieure
+    function rafraichirProgression() {
+        let totalQuestions = questionsData.length;
+        let questionsRepondues = 0;
+
+        questionsData.forEach(q => {
+            const card = document.getElementById(`q-card-${q.id}`);
+            if (card) {
+                if (q.type === "QROC") {
+                    const txt = card.querySelector('textarea').value.trim();
+                    if (txt.length > 0 || card.classList.contains('corrected')) questionsRepondues++;
+                } else {
+                    const checked = card.querySelectorAll('input:checked').length > 0;
+                    if (checked || card.classList.contains('corrected')) questionsRepondues++;
+                }
+            }
+        });
+
+        const pct = Math.round((questionsRepondues / totalQuestions) * 100);
+        document.getElementById('progress-bar').style.width = `${pct}%`;
+        document.getElementById('progress-text').innerText = `Progression : ${pct}%`;
+    }
+
+    // Tout révéler en un seul clic
+    function toutReveler() {
+        questionsData.forEach(q => revelerQuestion(q.id));
+    }
+
+    // Remise à zéro complète
+    function recommencerQuiz() {
+        genererQuiz();
+        document.getElementById('score-display').innerText = `Score EDN : -- / 17`;
+    }
+
+    // Lancement au chargement de la page
+    window.onload = genererQuiz;
+</script>
+
+</body>
+</html>
