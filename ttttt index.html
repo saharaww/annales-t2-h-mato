@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Annales - DFG3 UE11.1 Janvier 2025 - SQI1</title>
+    <style>
+        :root {
+            --bg-color: #f7f5f0;
+            --card-bg: #ffffff;
+            --text-color: #3e3a35;
+            --primary: #c9a076;
+            --primary-dark: #b38659;
+            --accent: #8c6239;
+            --success: #4e8c6f;
+            --success-light: #e6f2ec;
+            --error: #b85c5c;
+            --error-light: #f9eae3;
+            --border: #e0dad1;
+            --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background-color: var(--bg-color); color: var(--text-color); font-family: var(--font-family); line-height: 1.6; padding: 20px; }
+        .container { max-width: 900px; margin: 0 auto; }
+        header { background: var(--card-bg); padding: 25px; border-radius: 12px; margin-bottom: 25px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border-left: 5px solid var(--primary); }
+        h1 { font-size: 1.8rem; color: var(--accent); margin-bottom: 10px; }
+        h2 { font-size: 1.3rem; margin: 20px 0 10px 0; color: var(--accent); border-bottom: 2px solid var(--border); padding-bottom: 5px; }
+        
+        .exam-controls { display: flex; flex-wrap: wrap; gap: 15px; align-items: center; justify-content: space-between; background: #faf8f5; padding: 15px; border-radius: 8px; border: 1px solid var(--border); margin-top: 15px; }
+        .toggle-container { display: flex; align-items: center; gap: 10px; cursor: pointer; font-weight: 600; }
+        .switch { position: relative; display: inline-block; width: 50px; height: 26px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .3s; border-radius: 34px; }
+        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 4px; bottom: 4px; background-color: white; transition: .3s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--success); }
+        input:checked + .slider:before { transform: translateX(24px); }
+
+        .timer-badge { display: none; background: #333; color: #fff; padding: 6px 12px; border-radius: 20px; font-weight: bold; font-family: monospace; font-size: 1.1rem; }
+        .global-score-container { background: #eef5f2; border: 1px solid #cce3d8; padding: 15px; border-radius: 8px; margin-bottom: 20px; display: none; text-align: center; }
+
+        .nav-tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid var(--border); padding-bottom: 10px; }
+        .tab-btn { background: none; border: none; padding: 10px 20px; font-size: 1rem; cursor: pointer; font-weight: 600; color: #7a746d; border-radius: 6px; transition: 0.2s; }
+        .tab-btn.active { background: var(--primary); color: white; }
+        .tab-btn:hover:not(.active) { background: #eee0d0; }
+
+        .section-view { display: none; }
+        .section-view.active { display: block; }
+
+        .dp-context { background: #fdfbf7; border: 1px solid var(--primary); padding: 20px; border-radius: 8px; margin-bottom: 20px; font-style: italic; border-left: 4px solid var(--primary); }
+        .question-card { background: var(--card-bg); padding: 20px; border-radius: 10px; margin-bottom: 20px; border: 1px solid var(--border); box-shadow: 0 2px 6px rgba(0,0,0,0.02); }
+        .q-header { display: flex; justify-content: space-between; font-weight: bold; margin-bottom: 12px; color: var(--accent); border-bottom: 1px dashed var(--border); padding-bottom: 6px; }
+        .q-text { font-size: 1.05rem; margin-bottom: 15px; font-weight: 500; }
+        
+        .options-list { list-style: none; display: flex; flex-direction: column; gap: 8px; margin-bottom: 15px; }
+        .option-item { display: flex; align-items: flex-start; gap: 10px; padding: 10px; border-radius: 6px; border: 1px solid var(--border); cursor: pointer; transition: 0.2s; }
+        .option-item:hover { background-color: #faf8f5; }
+        .option-item input { margin-top: 4px; transform: scale(1.1); }
+
+        .btn { background: var(--primary); color: white; border: none; padding: 10px 18px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.95rem; transition: 0.2s; }
+        .btn:hover { background: var(--primary-dark); }
+        .btn-secondary { background: #7a746d; }
+        .btn-secondary:hover { background: #615c57; }
+        .btn-danger { background: #b85c5c; }
+        .btn-danger:hover { background: #a14b4b; }
+        .actions-row { display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap; }
+
+        .feedback-box { margin-top: 15px; padding: 15px; border-radius: 6px; display: none; font-size: 0.95rem; }
+        .feedback-box.visible { display: block; }
+        .feedback-box.correct { background: var(--success-light); border-left: 4px solid var(--success); }
+        .feedback-box.partial { background: #fff9e6; border-left: 4px solid #d99b00; }
+        .feedback-box.wrong { background: var(--error-light); border-left: 4px solid var(--error); }
+        .justifications { margin-top: 10px; padding-top: 10px; border-top: 1px dashed #ccc; font-size: 0.9rem; color: #555; }
+
+        .img-placeholder { background: #e0dad1; border: 2px dashed #b38659; border-radius: 6px; padding: 30px; text-align: center; margin: 15px 0; color: #5c554e; font-size: 0.9rem; }
+
+        /* Correction highlights */
+        .option-item.true-required { border-color: var(--success); background-color: #f0f7f4; }
+        .option-item.false-selected { border-color: var(--error); background-color: #fbf2f2; }
+
+        .progress-bar-container { background: #e0dad1; height: 10px; border-radius: 5px; margin-bottom: 20px; overflow: hidden; display: none; }
+        .progress-bar-fill { height: 100%; background: var(--success); width: 0%; transition: width 0.3s; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>DFG3-UE11.1 - JANVIER 2025 - Épreuve SQI1</h1>
+        <p>Entraînement complet et correction selon les normes d'évaluation EDN (Questions Isolées & Dossiers Progressifs).</p>
+        
+        <div class="exam-controls">
+            <label class="toggle-container">
+                <span class="switch">
+                    <input type="checkbox" id="examModeToggle">
+                    <span class="slider"></span>
+                </span>
+                <span>Mode Examen (Masquer corrections immédiates & Chronomètre)</span>
+            </label>
+            <div id="examTimer" class="timer-badge">00:00:00</div>
+            <div class="header-buttons" style="display: flex; gap: 10px;">
+                <button id="endExamBtn" class="btn btn-secondary" style="display:none;">Terminer l'examen</button>
+                <button id="revealAllBtn" class="btn btn-secondary">Voir toutes les réponses</button>
+                <button id="restartExamBtn" class="btn btn-danger">Recommencer</button>
+            </div>
+        </div>
+    </header>
+
+    <div id="globalScore" class="global-score-container"></div>
+    <div class="progress-bar-container" id="progressBarContainer"><div class="progress-bar-fill" id="progressBarFill"></div></div>
+
+    <nav class="nav-tabs">
+        <button class="tab-btn active" onclick="switchTab('qi')">Questions Isolées</button>
+        <button class="tab-btn" onclick="switchTab('mdp1')">mDP 1 (Rachis/Bioch)</button>
+        <button class="tab-btn" onclick="switchTab('mdp2')">mDP 2 (Ictère/Anémie)</button>
+    </nav>
+
+    <div id="view-qi" class="section-view active"></div>
+
+    <div id="view-mdp1" class="section-view">
+        <div class="dp-context">
+            <strong>Contexte Initial mDP1 :</strong> Une patiente de 70 ans consulte aux urgences pour des douleurs rachidiennes diffuses évoluant depuis un mois. Elle n'a pas d'antécédent personnel. Son dernier bilan biologique réalisé en ville il y a six mois était normal. À l'examen clinique, on note une altération de l'état général et un pli cutané persistant au niveau de la cuisse. Elle est alitée mais est capable de bouger ses quatre membres contre gravité. Elle dit être surtout limitée par les douleurs. Elle est capable de vous donner son nom, son prénom et sa date de naissance, mais est désorientée dans l'année, la ville où vous vous trouvez et le nom du président de la République.
+        </div>
+        <div id="questions-mdp1"></div>
+    </div>
+
+    <div id="view-mdp2" class="section-view">
+        <div class="dp-context">
+            <strong>Contexte Initial mDP2 :</strong> Un patient de 60 ans consulte aux urgences pour une altération de l'état général depuis une semaine. À l'examen physique, il présente un ictère généralisé. Il est dyspnéique au moindre effort et ses conjonctives sont décolorées.
+        </div>
+        <div id="questions-mdp2"></div>
+    </div>
+</div>
+
+<script>
+    const dataset = {
+        qi: [
+            {
+                id: "qi1", type: "QRM",
+                num: 1, text: "Vous voyez en consultation un patient de 75 ans pour avis concernant une élévation de l'hémoglobine. L'hémogramme du patient est le suivant : leucocytes 14 G/L, polynucléaires neutrophiles 10.7 G/L, éosinophiles 0.4 G/L, basophiles 0.2 G/L, lymphocytes 1.2 G/L, monocytes 0.7 G/L. Hémoglobine 18.1 g/dL, hématocrite 54%, VGM 91 fL, CCMH 33.7 g/dL, réticulocytes 79 G/L, plaquettes 550 G/L. Vous évoquez le diagnostic de polyglobulie primitive de Vaquez. Parmi les propositions suivantes, lesquelles sont compatibles avec ce diagnostic ?",
+                options: { A: "Absence de blastes circulants", B: "Présence d'un réarrangement impliquant les gènes BCR et ABL", C: "Présence d'une mutation ponctuelle au niveau du gène JAK2", D: "Taux d'érythropoïétine sérique supérieur à la normale", E: "Présence d'une hyperleucocytose et d'une thrombocytose" },
+                correct: ["A", "C", "E"],
+                just: "B est faux (caractérise la LMC). D est faux, l'EPO sérique est basse dans la maladie de Vaquez (une EPO élevée oriente vers une polyglobulie secondaire)."
+            },
+            {
+                id: "qi2", type: "QRM",
+                num: 2, text: "Une patiente âgée de 45 ans consulte aux urgences pour fièvre élevée à 39,5°C accompagnée de frissons. La fièvre a commencé le jour même. À l'examen physique, vous ne décelez pas de porte d'entrée potentielle pour une infection. Son traitement comporte du carbimazole (NEO-MERCAZOLE) prescrit depuis trois semaines pour une hyperthyroïdie de Basedow. Vous pensez alors à la possibilité d'une agranulocytose médicamenteuse compliquée d'une neutropénie fébrile. L'hémogramme montre effectivement une agranulocytose isolée (PNN à 0.14 G/L). Pour confirmer ce diagnostic, vous demandez la réalisation d'un myélogramme. Parmi les propositions suivantes, quelles anomalies cytologiques sur le myélogramme sont compatibles avec le diagnostic d'agranulocytose médicamenteuse de mécanisme immuno-allergique ?",
+                options: { A: "Présence d'un pourcentage de blastes supérieur à 20%", B: "Moelle de richesse normale", C: "Blocage de maturation au niveau de la lignée granuleuse au stade de promyélocytes", D: "Présence de mégacaryocytes dysplasiques hypolobés", E: "Excès de plasmocytes dystrophiques supérieur à 10%" },
+                correct: ["B", "C"],
+                just: "A oriente vers une leucémie aiguë. D évoque un syndrome myélodysplasique. E oriente vers un myélome multiple."
+            },
+            {
+                id: "qi3", type: "QRM",
+                num: 3, text: "Quels éléments permettent de préciser le pronostic des syndromes myélodysplasiques (plusieurs réponses correctes) ?",
+                options: { A: "Le pourcentage de blastes médullaires", B: "La présence d'une splénomégalie", C: "Le nombre de cytopénies", D: "L'existence de certaines anomalies cytogénétiques", E: "Un taux de LDH (lactate déshydrogénase) élevé" },
+                correct: ["A", "C", "D"],
+                just: "B: Il n'existe pas de syndrome tumoral classique dans les SMD, sauf formes frontières comme la LMMC. E: Non retenu comme critère pronostique principal IPSS-R."
+            },
+            {
+                id: "qi4", type: "QRM",
+                num: 4, text: "Concernant le diagnostic d'un lymphome de Hodgkin, quelles propositions sont exactes (plusieurs réponses correctes) ?",
+                options: { A: "Les cellules tumorales caractéristiques sont les cellules de Reed-Sternberg", B: "Les cellules tumorales caractéristiques expriment le CD30 et le CD15", C: "Une masse médiastinale peut révéler le diagnostic de lymphome hodgkinien", D: "Le bilan d'extension permet d'évaluer le stade du lymphome selon la classification de Binet", E: "Les stades I et II d'Ann Arbor sont des formes localisées" },
+                correct: ["A", "B", "C", "E"],
+                just: "D est faux : la classification de Binet s'applique exclusivement à la leucémie lymphoïde chronique (LLC)."
+            },
+            {
+                id: "qi5", type: "QRM",
+                num: 5, text: "Concernant le diagnostic de gammapathie monoclonale de signification indéterminée (MGUS) :",
+                options: { A: "Le patient est asymptomatique", B: "L'immunoglobuline monoclonale est uniquement de type IgG ou IgA", C: "Le taux de l'immunoglobuline monoclonale est strictement inférieur à 10 g/L", D: "Le taux urinaire du composant monoclonal est strictement inférieur à 500 mg/24h", E: "L'absence d'antécédent familial au 1er degré de myélome multiple est indispensable au diagnostic" },
+                correct: ["A", "D"],
+                just: "B est faux (peut être IgM). C est faux (< 30 g/L). E est faux (non requis)."
+            },
+            {
+                id: "qi6", type: "QRM",
+                num: 6, text: "Quels éléments cliniques sont en faveur du diagnostic de maladie de Vaquez (plusieurs réponses correctes) ?",
+                options: { A: "Splénomégalie", B: "Prurit à l'eau", C: "La présence d'adénopathies", D: "Une thrombose des veines splanchniques", E: "Des épisodes d'érythromélalgies" },
+                correct: ["A", "B", "D", "E"],
+                just: "Les adénopathies (C) ne font pas partie du tableau clinique typique des syndromes myéloprolifératifs non lymphoïdes."
+            },
+            {
+                id: "qi7", type: "QRM",
+                num: 7, text: "Parmi les propositions suivantes concernant la leucémie myéloïde chronique, lesquelles sont exactes ?",
+                options: { A: "Il s'agit d'un syndrome myéloprolifératif chronique", B: "Il s'agit d'un syndrome myélodysplasique chronique", C: "L'hémogramme objective une hyperleucocytose à lymphocytes et la présence d'ombres de Gumprecht", D: "Il peut exister une splénomégalie à l'examen clinique", E: "Elle est caractérisée par la présence d'une translocation chromosomique t(9;22) entraînant la formation du chromosome de Philadelphie" },
+                correct: ["A", "D", "E"],
+                just: "C est faux : l'hyperleucocytose à lymphocytes et ombres de Gumprecht caractérisent la LLC, pas la LMC."
+            },
+            {
+                id: "qi8", type: "QRM",
+                num: 8, text: "Concernant la néphropathie à cylindres myélomateux (NCM) :",
+                options: { A: "La NCM se caractérise par une insuffisance rénale aiguë avec une protéinurie constituée de chaînes légères polyclonales", B: "La NCM is liée au dépôt de chaînes légères au niveau des glomérules rénaux", C: "L'hypercalcémie aiguë favorise la survenue d'une NCM", D: "Une albuminurie supérieure à 1 g/dL doit faire rechercher un diagnostic différentiel", E: "Le tableau de NCM associe protéinurie monoclonale, hématurie, HTA et œdèmes" },
+                correct: ["C", "D"],
+                just: "A est faux (chaînes monobjectivées). B est faux (précipitation tubulaire). E décrit une atteinte glomérulaire, or la NCM est une atteinte tubulo-interstitielle pure et isolée."
+            },
+            {
+                id: "qi9", type: "QRM",
+                num: 9, text: "Parmi les propositions suivantes concernant l'agranulocytose médicamenteuse :",
+                options: { A: "Le risque principal est infectieux", B: "Le myélogramme est toujours indispensable devant une agranulocytose causée par une chimiothérapie", C: "Le mécanisme principal est immuno-allergique en cas d'agranulocytose isolée", D: "Les antithyroïdiens de synthèse peuvent causer une agranulocytose", E: "La clozapine peut causer une agranulocytose" },
+                correct: ["A", "C", "D", "E"],
+                just: "B est faux : après chimiothérapie cytotoxique, la neutropénie/agranulocytose est attendue et prévisible, le myélogramme est inutile."
+            },
+            {
+                id: "qi10", type: "QRM",
+                num: 10, text: "Concernant le Purpura Thrombopénique Immunologique (PTI) :",
+                options: { A: "Il peut s'accompagner de saignements muqueux", B: "Il peut se compliquer par la survenue d'hémarthroses spontanées", C: "Il est le plus souvent résolutif sans nécessité de traitement spécifique chez l'adulte", D: "Il peut survenir chez les patients atteints de leucémie lymphoïde chronique (LLC)", E: "Il est observé plus rarement chez les enfants que chez les sujets âgés" },
+                correct: ["A", "D"],
+                just: "B est faux (les hémarthroses désignent un trouble de la coagulation secondaire, ex: Hémophilie). C est faux (souvent chronique chez l'adulte). E est faux (très fréquent chez l'enfant)."
+            },
+            {
+                id: "qi11", type: "QRM",
+                num: 11, text: "Parmi les propositions suivantes concernant le diagnostic des lymphomes malins :",
+                options: { A: "Le diagnostic de lymphome B diffus à grandes cellules est histologique", B: "La présence de cellules de Reed-Sternberg sur la biopsie est en faveur du diagnostic de lymphome de Hodgkin", C: "La présence d'une masse abdominale d'évolution rapide constitue une urgence diagnostique et thérapeutique", D: "Le lymphome de Hodgkin est plus fréquent que les lymphomes non hodgkiniens", E: "Le bilan d'extension doit comporter une TEP-TDM au 18-FDG" },
+                correct: ["A", "B", "C", "E"],
+                just: "D est faux : les LNH sont nettement plus fréquents que la maladie de Hodgkin (environ 17 000 cas/an contre 1 900 cas/an en France)."
+            }
+        ],
+        mdp1: [
+            {
+                id: "mdp1_q1", type: "QRM", num: 1,
+                text: "Devant le syndrome confusionnel que présente la patiente, vous prescrivez un bilan biologique. La glycémie capillaire est normale. Votre collègue biologiste vous signale que la calcémie corrigée est élevée à 3,7 mmol/L. Parmi les signes cliniques suivants, lesquels sont associés à l'hypercalcémie ?",
+                options: { A: "Signe de la main d'accoucheur", B: "Douleurs abdominales diffuses", C: "Déshydratation secondaire à une polyurie", D: "Hallucinations", E: "Réflexes ostéotendineux vifs et polycinétiques" },
+                correct: ["B", "C", "D"],
+                just: "Le signe de la main d'accoucheur et les ROT vifs sont caractéristiques de l'HYPOcalcémie."
+            },
+            {
+                id: "mdp1_q2", type: "QRM", num: 2,
+                text: "En plus de l'hypercalcémie, le reste de la biochimie de la patiente montre : Na 134 mmol/L, K 5,5 mmol/L, Cl 100 mmol/L, protides 109 g/L, urée 15 mmol/L, créatinine 280 µmol/L. La bandelette urinaire montre des traces de protides. Quelles propositions sont correctes ?",
+                options: { A: "La patiente ne présente pas d'insuffisance rénale", B: "La patiente présente une hyperprotidémie", C: "La patiente présente un syndrome de lyse tumorale", D: "L'hypercalcémie peut expliquer, au moins en partie, l'insuffisance rénale aiguë", E: "Le résultat de la bandelette urinaire élimine la présence d'une protéinurie tubulaire" },
+                correct: ["B", "D"],
+                just: "A: Faux, créatinine à 280. C: Le syndrome de lyse donne une hypocalcémie. E: Faux, la bandelette ne détecte que l'albumine et passe à côté des chaînes légères (protéinurie de Bence-Jones)."
+            },
+            {
+                id: "mdp1_q3", type: "QRM", num: 3,
+                text: "Un scanner du rachis entier est demandé pour explorer les douleurs rachidiennes diffuses de la patiente. Concernant l'interprétation d'une coupe scannographique typique suspectant une infiltration, quelles propositions sont correctes ?",
+                hasImage: true, imgDesc: "[Image scannographique vertébrale : Lésions ostéolytiques multiples]",
+                options: { A: "Le corps vertébral est le siège d'une lésion ostéolytique unique", B: "Le corps vertébral est le siège de lésions ostéolytiques multiples", C: "Le canal rachidien est rétréci", D: "L'injection d'un produit de contraste iodé est nécessaire pour préciser le bilan lèsionnel", E: "Les anomalies observées peuvent expliquer les douleurs rachidiennes de la patiente" },
+                correct: ["B", "E"],
+                just: "D est un piège : le scanner osseux corps entier en cas de suspicion de myélome se réalise impérativement SANS injection de produit de contraste."
+            },
+            {
+                id: "mdp1_q4", type: "QRM", num: 4,
+                text: "Devant la présence de lésions ostéolytiques lacunaires à l'emporte-pièce au niveau de plusieurs corps vertébraux, vous évoquez le diagnostic de myélome multiple. Concernant le diagnostic positif de myélome multiple, quelles propositions sont correctes ?",
+                options: { A: "Le diagnostic positif de myélome nécessite la réalisation d'une biopsie vertébrale", B: "Le diagnostic positif de myélome nécessite la réalisation d'une biopsie ostéomédullaire", C: "Le diagnostic positif de myélome nécessite la réalisation d'un myélogramme", D: "La cellule tumorale du myélome is un plasmocyte", E: "La cellule tumorale du myélome is un lymphocyte T CD8+" },
+                correct: ["C", "D"],
+                just: "Le myélogramme est indispensable pour prouver l'infiltration plasmocytaire médullaire supérieure ou égale à 10%."
+            },
+            {
+                id: "mdp1_q5", type: "QRM", num: 5,
+                text: "Parmi les complications suivantes, lesquelles sont associées au myélome multiple ?",
+                options: { A: "Syndrome de Richter", B: "Syndrome de la queue de cheval", C: "Néphropathie à cylindres myélomateux", D: "Déficit immunitaire humoral", E: "Infection fongique pulmonaire invasive d'emblée" },
+                correct: ["B", "C", "D"],
+                just: "Le syndrome de Richter est une complication évolutive de la LLC. Le syndrome de la queue de cheval est possible suite à un tassement ou épidurite plasmocytaire."
+            },
+            {
+                id: "mdp1_q6", type: "QRM", num: 6,
+                text: "Concernant les examens complémentaires à visée diagnostique dans le bilan du myélome multiple, quelles propositions sont correctes ?",
+                options: { A: "Les plasmocytes du myélome peuvent synthétiser trois types de chaînes légères : kappa, lambda et epsilon", B: "La protidémie est le plus souvent élevée en cas de myélome à immunoglobuline complète", C: "La recherche d'une protéinurie tubulaire (ou des chaînes légères) est systématique", D: "La réalisation d'un scanner du corps entier sans et avec injection de produit de contraste iodé est indispensable", E: "La présence anormale de chaînes légères polytypiques dans les urines est appelée 'protéinurie de Bence-Jones'" },
+                correct: ["B", "C"],
+                just: "A: Il n'existe que 2 types de chaînes légères (kappa/lambda). D: SANS injection. E: C'est une protéinurie monotypique."
+            }
+        ],
+        mdp2: [
+            {
+                id: "mdp2_q1", type: "QRM", num: 1,
+                text: "Parmi les propositions suivantes, quelles anomalies hématologiques peuvent être évoquées en première intention devant le tableau clinique initial de ce patient (ictère généralisé, dyspnée d'effort, conjonctives décolorées) ?",
+                options: { A: "Thrombocytose", B: "Polyglobulie", C: "Hémolyse", D: "Anémie", E: "Gammapathie monoclonale" },
+                correct: ["C", "D"],
+                just: "Conjonctives décolorées + dyspnée = orientation anémie. Ictère = orientation hémolyse (bilirubine libre)."
+            },
+            {
+                id: "mdp2_q2", type: "QRM", num: 2,
+                text: "Vous récupérez les résultats du bilan biochimique : Haptoglobine effondrée < 0,08 g/L, LDH élevé à 1736 UI/L, bilirubine totale élevée à 187 µmol/L avec bilirubine conjuguée normale à 13 µmol/L. Quels examens biologiques à visée diagnostique sont utiles à ce stade de la prise en charge ?",
+                options: { A: "Sérologie des hépatites B et C", B: "Recherche de drépanocytes sur le frottis sanguin", C: "Recherche de schizocytes sur le frottis sanguin", D: "Test direct à l'antiglobuline (test de Coombs direct)", E: "Réticulocytes" },
+                correct: ["C", "D", "E"],
+                just: "C explore une cause mécanique (MAT). D oriente vers l'origine immunologique (AHAI). E confirme le caractère régénératif de l'anémie."
+            },
+            {
+                id: "mdp2_q3", type: "QRM", num: 3,
+                text: "L'hémogramme revient : Leucocytes 555 G/L, lymphocytes 540 G/L, PNN 14,5 G/L. Hémoglobine 4,5 g/dL, VGM 103 fL, réticulocytes 300 G/L, Plaquettes 140 G/L. Quels examens biologiques à visée diagnostique sont utiles à ce stade ?",
+                options: { A: "Myélogramme", B: "Frottis sanguin", C: "Immunophénotypage des lymphocytes circulants", D: "Mutation JAK2 V617F", E: "Transcrit de fusion BCR-ABL" },
+                correct: ["B", "C"],
+                just: "Hyperlymphocytose majeure chez un sujet de 60 ans = suspicion forte de LLC. Le myélogramme (A) est inutile au diagnostic de LLC."
+            },
+            {
+                id: "mdp2_q4", type: "QRM", num: 4,
+                text: "Vous évoquez le diagnostic d'anémie hémolytique auto-immune (AHAI). Parmi les propositions suivantes, quels éléments seront en faveur de ce diagnostic ou du contexte sous-jacent chez ce patient ?",
+                options: { A: "Présence de drépanocytes sur le frottis", B: "Positivité du test direct à l'antiglobuline (Coombs direct)", C: "Présence d'ombres de Gumprecht sur le frottis", D: "Présence de schizocytes sur le frottis", E: "Présence d'une hyperlymphocytose sur l'hémogramme" },
+                correct: ["B", "C", "E"],
+                just: "Le Coombs signe l'AHAI. Les ombres de Gumprecht et l'hyperlymphocytose signent la LLC inductrice."
+            },
+            {
+                id: "mdp2_q5", type: "QRM", num: 5,
+                text: "Concernant le résultat de l'immunophénotypage des lymphocytes circulants attendu dans la leucémie lymphoïde chronique (LLC), quelles propositions sont correctes ?",
+                options: { A: "L'immunophénotypage est réalisé grâce à la technique d'hybridation in situ", B: "La population lymphocytaire en excès est d'origine T par expression du CD3", C: "La population lymphocytaire en excès est monotypique par l'expression d'une chaîne légère unique (kappa ou lambda)", D: "La population lymphocytaire en excès exprime les marqueurs CD20, CD5 et CD23", E: "Le score de Binet appliqué à l'immunophénotypage est indispensable au diagnostic positif" },
+                correct: ["C", "D"],
+                just: "La LLC est une prolifération monoclonale B (CD5+, CD23+, CD20 faible). Réalisé par cytométrie en flux."
+            },
+            {
+                id: "mdp2_q6", type: "QRM", num: 6,
+                text: "Concernant les critères du score de Matutes, quelles propositions sont correctes ?",
+                hasImage: true, imgDesc: "[Tableau du Score de Matutes : CD5+, CD23+, FMC7-, CD22/79b faible, IgS faible]",
+                options: { A: "Une expression faible des immunoglobulines de surface vaut un point", B: "Une expression faible de l'antigène CD79b (ou CD22) vaut un point", C: "Une expression monotypique kappa ou lambda vaut un point", D: "Une expression forte de l'antigène FMC7 vaut un point", E: "Une expression forte de l'antigène CD20 vaut un point" },
+                correct: ["A", "B"],
+                just: "Donnent 1 point : CD5+, CD23+, FMC7-, IgS faible, CD79b (ou CD22) faible."
+            },
+            {
+                id: "mdp2_q7", type: "QRM", num: 7,
+                text: "Concernant la classification pronostique de Binet dans la LLC, quelles propositions sont correctes ?",
+                options: { A: "La région axillaire gauche est considérée individuellement comme une aire ganglionnaire, au même titre que la région axillaire droite", B: "Cinq aires ganglionnaires sont définies dans cette classification", C: "Une anémie inférieure à 10 g/dL, quel que soit son mécanisme (infiltration ou auto-immun), classe le patient au stade C", D: "L'atteinte d'au moins 3 aires ganglionnaires classe d'emblée au stade C", E: "Le stade A est défini uniquement sur les données de l'hémogramme" },
+                correct: ["B", "C"],
+                just: "A: Faux, les aires axillaires bilatérales comptent pour une seule aire globale. C: Vrai, Hb < 10 g/dL ou Plaquettes < 100 G/L = Stade C."
+            },
+            {
+                id: "mdp2_q8", type: "QRM", num: 8,
+                text: "Vous récupérez le résultat de l'électrophorèse des protéines sériques (EPS) du patient. Concernant l'interprétation attendue dans ce contexte classique de LLC, quelles propositions sont correctes ?",
+                options: { A: "Le patient présente un déficit de l'immunité cellulaire T", B: "Une immunofixation sérique est nécessaire pour déterminer la nature d'un pic détecté dans la zone de l'albumine", C: "Le patient est exposé au risque d'infections pulmonaires et ORL à germes encapsulés (Pneumocoque, Haemophilus)", D: "Le patient présente une hypogammaglobulinémie rentrant dans le cadre de la LLC", E: "L'hypogammaglobulinémie doit faire rechercher un myélome multiple à chaînes légères en priorité" },
+                correct: ["C", "D"],
+                just: "Le profil classique de la LLC au long cours est l'hypogammaglobulinémie globale (chute de la zone gamma), ce qui expose aux germes encapsulés."
+            },
+            {
+                id: "mdp2_q9", type: "QRM", num: 9,
+                text: "Quelques années plus tard, le patient consulte pour la survenue d'une tuméfaction rapidement progressive au niveau de la région temporale droite. Vous évoquez un syndrome de Richter. Une TEP-TDM est réalisée. Concernant l'interprétation de cette imagerie ou la physiopathologie de cette complication, quelles propositions sont correctes ?",
+                options: { A: "La présence d'une lésion tumorale lytique intensément hypométabolique est attendue", B: "La lèsion tumorale lytique peut présenter une extension intracrânienne et intra-orbitaire", C: "Le résultat de cette TEP-TDM hypermétabolique permet d'éliminer un syndrome de Richter", D: "Le fluorodésoxyglucose (18F) est le radio-isotope utilisé pour cette TEP-TDM", E: "La fixation du parenchyme cérébral est physiologique sur une TEP-TDM au 18-FDG" },
+                correct: ["B", "D", "E"],
+                just: "Le syndrome de Richter est une transformation en lymphome agressif de haut grade, intensément HYPERmétabolique. Le cerveau consomme physiologiquement beaucoup de glucose (E)."
+            }
+        ]
+    };
+
+    let userAnswers = {};
+    let examMode = false;
+    let timerInterval = null;
+    let examSeconds = 0;
+
+    document.addEventListener("DOMContentLoaded", () => {
+        initApp();
+        document.getElementById('examModeToggle').addEventListener('change', toggleExamMode);
+        document.getElementById('endExamBtn').addEventListener('click', endExam);
+        document.getElementById('restartExamBtn').addEventListener('click', restartApp);
+        document.getElementById('revealAllBtn').addEventListener('click', revealAllAnswers);
+    });
+
+    function initApp() {
+        renderSection('qi', 'view-qi');
+        renderSection('mdp1', 'questions-mdp1');
+        renderSection('mdp2', 'questions-mdp2');
+        updateDPVisibility();
+    }
+
+    function switchTab(tab) {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.section-view').forEach(v => v.classList.remove('active'));
+        
+        event.target.classList.add('active');
+        document.getElementById(`view-${tab}`).classList.add('active');
+    }
+
+    function renderSection(key, targetId) {
+        const container = document.getElementById(targetId);
+        container.innerHTML = '';
+
+        dataset[key].forEach((q) => {
+            const card = document.createElement('div');
+            card.className = 'question-card';
+            card.id = `card-${q.id}`;
+            card.setAttribute('data-num', q.num);
+
+            let imgHtml = '';
+            if (q.hasImage) {
+                imgHtml = `<div class="img-placeholder">📸 ${q.imgDesc}</div>`;
+            }
+
+            let optionsHtml = '';
+            Object.keys(q.options).forEach(letter => {
+                optionsHtml += `
+                    <label class="option-item" id="label-${q.id}-${letter}">
+                        <input type="checkbox" name="q-${q.id}" value="${letter}">
+                        <span><strong>${letter}.</strong> ${q.options[letter]}</span>
+                    </label>
+                `;
+            });
+
+            card.innerHTML = `
+                <div class="q-header">
+                    <span>Question ${q.num}</span>
+                    <span>${q.type}</span>
+                </div>
+                <div class="q-text">${q.text}</div>
+                ${imgHtml}
+                <div class="options-list">${optionsHtml}</div>
+                <div class="actions-row">
+                    <button class="btn" id="btn-val-${q.id}" onclick="validateQuestion('${key}', '${q.id}')">Valider</button>
+                    <button class="btn btn-secondary" id="btn-rev-${q.id}" onclick="revealSingle('${q.id}')">Voir la réponse</button>
+                </div>
+                <div class="feedback-box" id="feed-${q.id}"></div>
+            `;
+            container.appendChild(card);
+        });
+    }
+
+    function toggleExamMode() {
+        examMode = document.getElementById('examModeToggle').checked;
+        const timerBadge = document.getElementById('examTimer');
+        const endBtn = document.getElementById('endExamBtn');
+        const progressBar = document.getElementById('progressBarContainer');
+
+        if (examMode) {
+            userAnswers = {};
+            examSeconds = 0;
+            timerBadge.style.display = 'block';
+            endBtn.style.display = 'inline-block';
+            progressBar.style.display = 'block';
+            document.getElementById('globalScore').style.display = 'none';
+            
+            initApp();
+
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                examSeconds++;
+                const hrs = String(Math.floor(examSeconds / 3600)).padStart(2, '0');
+                const mins = String(Math.floor((examSeconds % 3600) / 60)).padStart(2, '0');
+                const secs = String(examSeconds % 60).padStart(2, '0');
+                timerBadge.innerText = `${hrs}:${mins}:${secs}`;
+            }, 1000);
+        } else {
+            clearInterval(timerInterval);
+            timerBadge.style.display = 'none';
+            endBtn.style.display = 'none';
+            progressBar.style.display = 'none';
+            initApp();
+        }
+    }
+
+    function updateDPVisibility() {
+        ['mdp1', 'mdp2'].forEach(key => {
+            const cards = document.querySelectorAll(`#view-${key} .question-card`);
+            cards.forEach((card, idx) => {
+                if (idx === 0) {
+                    card.style.display = 'block';
+                } else {
+                    const prevCard = cards[idx - 1];
+                    const prevId = prevCard.id.replace('card-', '');
+                    if (userAnswers[prevId] !== undefined) {
+                        card.style.display = 'block';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                }
+            });
+        });
+        updateProgressBar();
+    }
+
+    function updateProgressBar() {
+        if (!examMode) return;
+        const total = dataset.qi.length + dataset.mdp1.length + dataset.mdp2.length;
+        const answered = Object.keys(userAnswers).length;
+        const pct = (answered / total) * 100;
+        document.getElementById('progressBarFill').style.width = `${pct}%`;
+    }
+
+    function validateQuestion(sectionKey, qId) {
+        const checkboxes = document.querySelectorAll(`input[name="q-${qId}"]:checked`);
+        const selected = Array.from(checkboxes).map(c => c.value);
+        
+        userAnswers[qId] = selected;
+
+        document.querySelectorAll(`input[name="q-${qId}"]`).forEach(i => i.disabled = true);
+        document.getElementById(`btn-val-${qId}`).disabled = true;
+
+        if (examMode) {
+            updateDPVisibility();
+        } else {
+            displayCorrection(sectionKey, qId);
+            updateDPVisibility();
+        }
+    }
+
+    function displayCorrection(sectionKey, qId) {
+        const q = dataset[sectionKey].find(item => item.id === qId);
+        const selected = userAnswers[qId] || [];
+        const feed = document.getElementById(`feed-${qId}`);
+        
+        let errors = 0;
+        const allLetters = ["A", "B", "C", "D", "E"];
+        
+        allLetters.forEach(l => {
+            const shouldBeSelected = q.correct.includes(l);
+            const isSelected = selected.includes(l);
+            const label = document.getElementById(`label-${qId}-${l}`);
+            
+            if (shouldBeSelected) {
+                label.classList.add('true-required');
+            }
+            if (isSelected && !shouldBeSelected) {
+                label.classList.add('false-selected');
+            }
+            if (shouldBeSelected !== isSelected) {
+                errors++;
+            }
+        });
+
+        let points = 0;
+        if (errors === 0) points = 1;
+        else if (errors === 1) points = 0.5;
+        else if (errors === 2) points = 0.2;
+
+        feed.className = "feedback-box visible " + (points === 1 ? "correct" : (points > 0 ? "partial" : "wrong"));
+        feed.innerHTML = `
+            <strong>Score : ${points} / 1 pt</strong> (${5 - errors} concordance(s))<br>
+            <strong>Bonnes réponses : ${q.correct.join(', ')}</strong>
+            <div class="justifications"><strong>Justification :</strong> ${q.just}</div>
+        `;
+    }
+
+    function revealSingle(qId) {
+        let section = 'qi';
+        if (qId.startsWith('mdp1')) section = 'mdp1';
+        if (qId.startsWith('mdp2')) section = 'mdp2';
+        
+        if (!userAnswers[qId]) {
+            userAnswers[qId] = [];
+        }
+        displayCorrection(section, qId);
+    }
+
+    function endExam() {
+        clearInterval(timerInterval);
+        examMode = false;
+        
+        document.getElementById('endExamBtn').style.display = 'none';
+        document.getElementById('examModeToggle').checked = false;
+
+        let totalPoints = 0;
+        let maxPoints = 0;
+
+        ['qi', 'mdp1', 'mdp2'].forEach(sectionKey => {
+            dataset[sectionKey].forEach(q => {
+                maxPoints += 1;
+                const selected = userAnswers[q.id] || [];
+                let errors = 0;
+                ["A", "B", "C", "D", "E"].forEach(l => {
+                    if (q.correct.includes(l) !== selected.includes(l)) {
+                        errors++;
+                    }
+                });
+                let points = 0;
+                if (errors === 0) points = 1;
+                else if (errors === 1) points = 0.5;
+                else if (errors === 2) points = 0.2;
+                
+                totalPoints += points;
+
+                displayCorrection(sectionKey, q.id);
+                document.getElementById(`card-${q.id}`).style.display = 'block';
+            });
+        });
+
+        const finalScoreBox = document.getElementById('globalScore');
+        finalScoreBox.style.display = 'block';
+        finalScoreBox.innerHTML = `
+            <h2>Résultat de votre Examen</h2>
+            <p style="font-size:1.3rem;">Note Finale : <strong>${totalPoints.toFixed(1)} / ${maxPoints}</strong></p>
+            <p>Temps écoulé : ${document.getElementById('examTimer').innerText}</p>
+            <p>Toutes les corrections détaillées et justifications ont été appliquées ci-dessous.</p>
+        `;
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function restartApp() {
+        if (confirm("Êtes-vous sûr de vouloir recommencer ? Toutes vos réponses actuelles seront effacées.")) {
+            document.getElementById('examModeToggle').checked = false;
+            examMode = false;
+            clearInterval(timerInterval);
+            
+            userAnswers = {};
+            examSeconds = 0;
+            
+            document.getElementById('examTimer').style.display = 'none';
+            document.getElementById('endExamBtn').style.display = 'none';
+            document.getElementById('progressBarContainer').style.display = 'none';
+            document.getElementById('globalScore').style.display = 'none';
+            
+            initApp();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    }
+
+    function revealAllAnswers() {
+        if (examMode) {
+            if (!confirm("Le mode examen est actif. Voir les réponses mettra fin à l'épreuve. Continuer ?")) {
+                return;
+            }
+            endExam();
+            return;
+        }
+
+        ['qi', 'mdp1', 'mdp2'].forEach(sectionKey => {
+            dataset[sectionKey].forEach(q => {
+                if (!userAnswers[q.id]) {
+                    userAnswers[q.id] = [];
+                }
+                displayCorrection(sectionKey, q.id);
+                document.getElementById(`card-${q.id}`).style.display = 'block';
+            });
+        });
+        
+        updateDPVisibility();
+        alert("Toutes les corrections et justifications sont désormais affichées !");
+    }
+</script>
+
+</body>
+</html>
